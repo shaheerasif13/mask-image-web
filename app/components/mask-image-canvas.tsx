@@ -14,10 +14,16 @@ const MaskImageCanvas: React.FC<MaskImageCanvasProps> = ({
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [mode, setMode] = useState<"scrub" | "erase">("scrub");
 
-  // Define constants inside the component
-  const SCRUBBER_SIZE = 20;
-  const ERASER_SIZE = 20;
-  const SCRUBBER_COLOR = "black";
+  // State for scrubber and eraser sizes and scrub color
+  const [scrubberSize, setScrubberSize] = useState(20);
+  const [eraserSize, setEraserSize] = useState(20);
+  const [scrubberColor, setScrubberColor] = useState("black");
+
+  // Define constants for default sizes
+  const DEFAULT_SCRUBBER_SIZE = 20;
+  const DEFAULT_ERASER_SIZE = 20;
+  const DEFAULT_SCRUBBER_COLOR = "black";
+  const ERASER_COLOR = "white";
 
   // Draw the uploaded image on the base canvas
   useEffect(() => {
@@ -69,11 +75,11 @@ const MaskImageCanvas: React.FC<MaskImageCanvasProps> = ({
     const y = e.clientY - rect.top;
 
     // Use different sizes based on the mode
-    const size = mode === "erase" ? ERASER_SIZE : SCRUBBER_SIZE;
+    const size = mode === "erase" ? eraserSize : scrubberSize;
 
     ctx.globalCompositeOperation =
       mode === "erase" ? "destination-out" : "source-over";
-    ctx.fillStyle = mode === "erase" ? "white" : SCRUBBER_COLOR;
+    ctx.fillStyle = mode === "erase" ? ERASER_COLOR : scrubberColor;
     ctx.beginPath();
     ctx.arc(x, y, size / 2, 0, Math.PI * 2);
     ctx.fill();
@@ -141,18 +147,31 @@ const MaskImageCanvas: React.FC<MaskImageCanvasProps> = ({
     }
   };
 
+  // Reset scrubber and eraser sizes to their defaults
+  const handleResetScrubberSize = () => {
+    setScrubberSize(DEFAULT_SCRUBBER_SIZE);
+  };
+
+  const handleResetEraserSize = () => {
+    setEraserSize(DEFAULT_ERASER_SIZE);
+  };
+
+  const handleResetScrubberColor = () => {
+    setScrubberColor(DEFAULT_SCRUBBER_COLOR);
+  };
+
   return (
-    <div className="flex flex-col items-center gap-4">
+    <div className="flex flex-col items-center gap-6">
       {/* Image Upload */}
       <input
         type="file"
         accept="image/*"
         onChange={handleImageUpload}
-        className="mb-2 px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+        className="mb-4 px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
       />
 
       {/* Canvas */}
-      <div className="relative">
+      <div className="relative mb-6">
         {/* Base Image Layer */}
         <canvas
           ref={canvasRef}
@@ -174,11 +193,11 @@ const MaskImageCanvas: React.FC<MaskImageCanvasProps> = ({
       </div>
 
       {/* Control Panel */}
-      <div className="flex gap-4">
+      <div className="flex gap-6">
         {/* Scrub Mode */}
         <button
           onClick={() => setMode("scrub")}
-          className={`px-4 py-2 rounded-md shadow-md ${
+          className={`px-6 py-2 rounded-md shadow-md ${
             mode === "scrub"
               ? "bg-blue-500 text-white"
               : "bg-gray-200 hover:bg-gray-300"
@@ -190,7 +209,7 @@ const MaskImageCanvas: React.FC<MaskImageCanvasProps> = ({
         {/* Erase Mode */}
         <button
           onClick={() => setMode("erase")}
-          className={`px-4 py-2 rounded-md shadow-md ${
+          className={`px-6 py-2 rounded-md shadow-md ${
             mode === "erase"
               ? "bg-red-500 text-white"
               : "bg-gray-200 hover:bg-gray-300"
@@ -202,7 +221,7 @@ const MaskImageCanvas: React.FC<MaskImageCanvasProps> = ({
         {/* Clear Canvas */}
         <button
           onClick={handleClearCanvas}
-          className="px-4 py-2 rounded-md shadow-md bg-gray-500 hover:bg-gray-700 text-white"
+          className="px-6 py-2 rounded-md shadow-md bg-gray-500 hover:bg-gray-700 text-white"
         >
           Clear
         </button>
@@ -210,9 +229,77 @@ const MaskImageCanvas: React.FC<MaskImageCanvasProps> = ({
         {/* Download Mask */}
         <button
           onClick={handleDownload}
-          className="px-4 py-2 rounded-md shadow-md bg-green-500 hover:bg-green-700 text-white"
+          className="px-6 py-2 rounded-md shadow-md bg-green-500 hover:bg-green-700 text-white"
         >
           Download Mask
+        </button>
+      </div>
+
+      {/* Range Controls */}
+      <div className="grid grid-cols-2 gap-8 mt-8">
+        {/* Scrubber Size Control */}
+        <div>
+          <label className="block font-medium text-gray-700">
+            Scrubber Size
+          </label>
+          <input
+            type="range"
+            min="10"
+            max="50"
+            value={scrubberSize}
+            onChange={(e) => setScrubberSize(Number(e.target.value))}
+            className="w-full"
+          />
+          <div className="flex justify-between">
+            <span>{scrubberSize}</span>
+            <button
+              onClick={handleResetScrubberSize}
+              className="text-xs text-blue-500"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+
+        {/* Eraser Size Control */}
+        <div>
+          <label className="block font-medium text-gray-700">Eraser Size</label>
+          <input
+            type="range"
+            min="10"
+            max="50"
+            value={eraserSize}
+            onChange={(e) => setEraserSize(Number(e.target.value))}
+            className="w-full"
+          />
+          <div className="flex justify-between">
+            <span>{eraserSize}</span>
+            <button
+              onClick={handleResetEraserSize}
+              className="text-xs text-blue-500"
+            >
+              Reset
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Scrubber Color Control */}
+      <div className="mt-6">
+        <label className="block font-medium text-gray-700">
+          Scrubber Color
+        </label>
+        <input
+          type="color"
+          value={scrubberColor}
+          onChange={(e) => setScrubberColor(e.target.value)}
+          className="w-16 h-10 border-none"
+        />
+        <button
+          onClick={handleResetScrubberColor}
+          className="mt-2 text-xs text-blue-500"
+        >
+          Reset Color
         </button>
       </div>
     </div>
