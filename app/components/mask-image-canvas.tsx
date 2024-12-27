@@ -1,14 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-interface MaskImageCanvasProps {
-  canvasWidth: number;
-  canvasHeight: number;
-}
-
-const MaskImageCanvas: React.FC<MaskImageCanvasProps> = ({
-  canvasWidth,
-  canvasHeight,
-}) => {
+const MaskImageCanvas: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scrubberLayerRef = useRef<HTMLCanvasElement>(null);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
@@ -18,6 +10,10 @@ const MaskImageCanvas: React.FC<MaskImageCanvasProps> = ({
   const [scrubberSize, setScrubberSize] = useState(20);
   const [eraserSize, setEraserSize] = useState(20);
   const [scrubberColor, setScrubberColor] = useState("black");
+
+  // State for dynamic canvas size, with initial values
+  const [canvasWidth, setCanvasWidth] = useState<number>(500); // Default canvas width
+  const [canvasHeight, setCanvasHeight] = useState<number>(500); // Default canvas height
 
   // Define constants for default sizes
   const DEFAULT_SCRUBBER_SIZE = 20;
@@ -37,7 +33,11 @@ const MaskImageCanvas: React.FC<MaskImageCanvasProps> = ({
       image.src = imageSrc;
 
       image.onload = () => {
-        // Scale the image to fit within the canvas
+        // Set the canvas size based on the image dimensions (Remove this if you want to keep the default canvas size)
+        setCanvasWidth(image.width);
+        setCanvasHeight(image.height);
+
+        // Clear the canvas and draw the image
         const scale = Math.min(
           canvasWidth / image.width,
           canvasHeight / image.height
@@ -45,7 +45,6 @@ const MaskImageCanvas: React.FC<MaskImageCanvasProps> = ({
         const scaledWidth = image.width * scale;
         const scaledHeight = image.height * scale;
 
-        // Clear the canvas and draw the image
         ctx.clearRect(0, 0, canvasWidth, canvasHeight);
         ctx.drawImage(
           image,
