@@ -33,23 +33,28 @@ const MaskImageCanvas: React.FC = () => {
       image.src = imageSrc;
 
       image.onload = () => {
-        // Set the canvas size based on the image dimensions (Remove this if you want to keep the default canvas size)
-        setCanvasWidth(image.width);
-        setCanvasHeight(image.height);
+        // Reset canvas dimensions to original image size
+        const originalWidth = image.width;
+        const originalHeight = image.height;
 
-        // Clear the canvas and draw the image
+        // Calculate the scale factor to fit the image within the canvas
         const scale = Math.min(
-          canvasWidth / image.width,
-          canvasHeight / image.height
+          canvasWidth / originalWidth,
+          canvasHeight / originalHeight
         );
-        const scaledWidth = image.width * scale;
-        const scaledHeight = image.height * scale;
+        const scaledWidth = originalWidth * scale;
+        const scaledHeight = originalHeight * scale;
 
-        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+        // Update the canvas size based on the scaled image
+        setCanvasWidth(scaledWidth);
+        setCanvasHeight(scaledHeight);
+
+        // Clear the canvas and draw the scaled image
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(
           image,
-          (canvasWidth - scaledWidth) / 2,
-          (canvasHeight - scaledHeight) / 2,
+          (canvas.width - scaledWidth) / 2,
+          (canvas.height - scaledHeight) / 2,
           scaledWidth,
           scaledHeight
         );
@@ -58,7 +63,7 @@ const MaskImageCanvas: React.FC = () => {
         const scrubberCanvas = scrubberLayerRef.current;
         const scrubberCtx = scrubberCanvas?.getContext("2d");
         if (scrubberCtx) {
-          scrubberCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+          scrubberCtx.clearRect(0, 0, canvas.width, canvas.height);
         }
       };
     }
@@ -106,7 +111,7 @@ const MaskImageCanvas: React.FC = () => {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownloadMask = () => {
     const baseCanvas = canvasRef.current;
     const scrubberCanvas = scrubberLayerRef.current;
     if (!baseCanvas || !scrubberCanvas) return;
@@ -133,12 +138,27 @@ const MaskImageCanvas: React.FC = () => {
     }
   };
 
+  const handleDownloadScaledImage = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    // Download the scaled image
+    const link = document.createElement("a");
+    link.download = "scaled-image.png";
+    link.href = canvas.toDataURL(); // Using the canvas's current data URL for the scaled image
+    link.click();
+  };
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
         if (reader.result) {
+          // Reset the canvas size before loading the new image
+          setCanvasWidth(500);
+          setCanvasHeight(500);
+
           setImageSrc(reader.result as string);
         }
       };
@@ -227,10 +247,18 @@ const MaskImageCanvas: React.FC = () => {
 
         {/* Download Mask */}
         <button
-          onClick={handleDownload}
+          onClick={handleDownloadMask}
           className="px-6 py-2 rounded-md shadow-md bg-green-500 hover:bg-green-700 text-white"
         >
           Download Mask
+        </button>
+
+        {/* Download Scaled Image */}
+        <button
+          onClick={handleDownloadScaledImage}
+          className="px-6 py-2 rounded-md shadow-md bg-yellow-500 hover:bg-yellow-700 text-white"
+        >
+          Download Scaled Image
         </button>
       </div>
 
