@@ -3,20 +3,21 @@ import React, { useEffect, useRef, useState } from "react";
 interface MaskImageCanvasProps {
   canvasWidth: number;
   canvasHeight: number;
-  scrubberColor?: string;
-  scrubberSize?: number;
 }
 
 const MaskImageCanvas: React.FC<MaskImageCanvasProps> = ({
   canvasWidth,
   canvasHeight,
-  scrubberColor = "black",
-  scrubberSize = 20,
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scrubberLayerRef = useRef<HTMLCanvasElement>(null);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [mode, setMode] = useState<"scrub" | "erase">("scrub");
+
+  // Define constants inside the component
+  const SCRUBBER_SIZE = 20;
+  const ERASER_SIZE = 20;
+  const SCRUBBER_COLOR = "black";
 
   // Draw the uploaded image on the base canvas
   useEffect(() => {
@@ -67,11 +68,14 @@ const MaskImageCanvas: React.FC<MaskImageCanvasProps> = ({
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
+    // Use different sizes based on the mode
+    const size = mode === "erase" ? ERASER_SIZE : SCRUBBER_SIZE;
+
     ctx.globalCompositeOperation =
       mode === "erase" ? "destination-out" : "source-over";
-    ctx.fillStyle = scrubberColor;
+    ctx.fillStyle = mode === "erase" ? "white" : SCRUBBER_COLOR;
     ctx.beginPath();
-    ctx.arc(x, y, scrubberSize / 2, 0, Math.PI * 2);
+    ctx.arc(x, y, size / 2, 0, Math.PI * 2);
     ctx.fill();
   };
 
