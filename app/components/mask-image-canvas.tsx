@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 
-interface ImageMaskingProps {
+interface MaskImageCanvasProps {
   canvasWidth: number;
   canvasHeight: number;
   scrubberColor?: string;
   scrubberSize?: number;
 }
 
-const ImageMasking: React.FC<ImageMaskingProps> = ({
+const MaskImageCanvas: React.FC<MaskImageCanvasProps> = ({
   canvasWidth,
   canvasHeight,
   scrubberColor = "black",
@@ -215,4 +215,4 @@ const ImageMasking: React.FC<ImageMaskingProps> = ({
   );
 };
 
-export default ImageMasking;
+export default MaskImageCanvas;
